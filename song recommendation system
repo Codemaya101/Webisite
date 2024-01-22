@@ -1,0 +1,27 @@
+import pandas as pd
+from scipy.spatial.distance import cosine
+
+# Load song data
+song_data = pd.read_csv('song_data.csv')
+
+# Compute the cosine similarity between users based on song preferences
+similarity_matrix = 1 - cosine(song_data.T)
+
+# Define a function to make song recommendations based on user preferences
+def recommend_songs(user_id, similarity_matrix, song_data, top_n=10):
+    user_row = song_data.loc[song_data['user_id'] == user_id]
+    user_songs = set(user_row.index)
+    
+    scores = []
+    for idx, row in song_data.iterrows():
+        if idx not in user_songs:
+            score = cosine(user_row.T, song_data.loc[idx])
+            scores.append((idx, score))
+    
+    scores.sort(key=lambda x: x[1])
+    
+    return scores[:top_n]
+
+# Recommend songs for a specific user
+recommended_songs = recommend_songs(123, similarity_matrix, song_data)
+print(recommended_songs)
